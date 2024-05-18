@@ -4,6 +4,7 @@ const request = require('request');
 const facebookBot = require('fb-messenger-bot-api');
 
 const app = express();
+const puppeteer = require('puppeteer');
 const axios = require('axios');
 app.use(bodyParser.json());
 const PORT = process.env.PORT || 3000;
@@ -80,7 +81,7 @@ const handlePostback = async(sender_psid, received_postback) => {
   let payload = received_postback.payload;
 
   if(payload === 'GET_STARTED'){
-    sendGetstartedButton()
+    dummyFunction(sender_psid);
   }
 }
 
@@ -113,24 +114,28 @@ function sendTextMessage(sender, text) {
 async function sendGetstartedButton(){
   const url = 'https://graph.facebook.com/v2.6/me/messenger_profile?access_token='+accessToken;
   const headers = {"Content-Type": "application/json"};
-  const payloadData1 = {
-    "greeting": [
-      {
-        "locale":"default",
-        "text":"Hello {{user_first_name}}! Are you ready to see the cutests cats and dogs"
-      }
-    ]
-  };
-  const payloadData2 = {
+  const payloadData = {
     "get_started": {
         "payload": "GET_STARTED"
     }
   };
-  var response = await axios.post(url, payloadData1, {headers: headers});
-  await axios.post(url, payloadData2, {headers: headers});
-  console.log(response.body);
-  console.log(response.status);
+  await axios.post(url, payloadData, {headers: headers});
 }
+
+async function dummyFunction(receipientId){
+  const browser = await puppeteer.launch();
+
+  // Create a new page
+  const page = await browser.newPage();
+
+  // Navigate to a webpage
+  await page.goto('https://www.google.com');
+
+  // Close the browser
+  await browser.close();
+  messageClient.sendTextMessage(receipientId, 'Scrape done');
+}
+
 
 app.listen(PORT, () => {
 
